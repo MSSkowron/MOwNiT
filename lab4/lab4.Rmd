@@ -1,0 +1,80 @@
+---
+title: "MOWNIT - Mateusz Skowron lab4"
+output: html_notebook
+---
+
+```{r}
+library("ggplot2")
+```
+
+```{r}
+data = read.csv("data.csv")
+```
+
+```{r}
+colnames(data)[1] = "length"
+```
+
+```{r}
+data$type = as.factor(data$type)
+```
+
+```{r}
+data_grouped = aggregate( time ~ length:type, data = data, FUN = mean)
+```
+
+```{r}
+data_grouped$std = aggregate( time ~ length:type, data = data, FUN = sd )$time
+```
+
+```{r}
+ggplot(data_grouped, aes(length,time)) + geom_errorbar(aes(ymin=time - std, ymax=time + std)) + geom_point(aes(color = type))
+```
+Aproksymacja mnożenia wektor * wektor
+```{r}
+aprox_v_times_v = data_grouped[data_grouped$type == "v_times_v",]
+```
+
+```{r}
+fit_v_times_v = lm(time ~ poly(length, 3, raw=TRUE), data=aprox_v_times_v)
+fit_v_times_v
+```
+
+```{r}
+ggplot(aprox_v_times_v,aes(length,time)) + geom_point(color = "red") + labs(title ="Vector * Vector")
+```
+
+```{r}
+points_v_times_v = data.frame(length = seq(0,10000, length.out=250))
+```
+
+```{r}
+points_v_times_v$time = predict(fit_v_times_v, points_v_times_v)
+last_plot() + geom_line(data = points_v_times_v, aes(length,time), color = "blue")+
+         labs(title ="Vector*Vector aproximation")
+```
+
+Aproksymacja mnożenia wektor * macierz
+```{r}
+aprox_v_times_m = data_grouped[data_grouped$type == "v_times_m",]
+```
+
+
+```{r}
+fit_v_times_m = lm(time ~ poly(length, 3, raw=TRUE), data=aprox_v_times_m)
+fit_v_times_m
+```
+
+```{r}
+ggplot(aprox_v_times_m,aes(length,time)) + geom_point(color = "red") + labs(title ="Vector * Matrix")
+```
+
+```{r}
+points_v_times_m = data.frame(length = seq(0,10000, length.out=250))
+```
+
+```{r}
+points_v_times_m$time = predict(fit_v_times_m, points_v_times_m)
+last_plot() + geom_line(data = points_v_times_m, aes(length,time), color = "blue")+
+         labs(title ="Vector*Matrix aproximation")
+```
